@@ -6,13 +6,14 @@ How to run:
 sudo apt update
 sudo apt install python3 python3-pip
 sudo apt install python3-venv -y
+sudo apt install sqlite3 libsqlite3-dev -y
 
 #create virtual environment
 python3 -m venv chgk-bot-env
 source chgk-bot-env/bin/activate
 
 #Install dependencies:
-pip install python-telegram-bot sqlite3
+pip install python-telegram-bot
 
 #Run your bot with:
 nohup python bot.py &
