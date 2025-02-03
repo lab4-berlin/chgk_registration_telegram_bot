@@ -1,7 +1,6 @@
 import getpass
 import sqlite3
 import asyncio
-import sys
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, LabeledPrice
 from telegram.ext import (
     Application, CommandHandler, MessageHandler, filters, CallbackContext, 
@@ -60,10 +59,7 @@ async def reg_id(update: Update, context: CallbackContext):
 
 async def precheckout_callback(update: Update, context: CallbackContext):
     query = update.pre_checkout_query
-    if query.invoice_payload == "Event Registration":
-        await query.answer(ok=True)
-    else:
-        await query.answer(ok=False, error_message="Something went wrong. Try again!")
+    await query.answer(ok=True)
 
 async def successful_payment(update: Update, context: CallbackContext):
     user_id = update.message.from_user.id
@@ -92,7 +88,7 @@ async def main():
             TEAM: [MessageHandler(filters.TEXT & ~filters.COMMAND, team)],
             REG_ID: [MessageHandler(filters.TEXT & ~filters.COMMAND, reg_id)],
             PAYMENT: [
-                PreCheckoutQueryHandler(precheckout_callback, block=False),
+                PreCheckoutQueryHandler(precheckout_callback),
                 MessageHandler(filters.SUCCESSFUL_PAYMENT, successful_payment)
             ],
         },
@@ -103,17 +99,12 @@ async def main():
     app.add_handler(conv_handler)
     app.add_handler(CommandHandler("list_registrations", list_registrations))
 
+    print("Bot is running...")
     await app.run_polling()
 
 if __name__ == "__main__":
     try:
-        loop = asyncio.get_running_loop()
-    except RuntimeError:
-        loop = None
-
-    if loop and loop.is_running():
-        print("Async loop already running, using create_task")
-        loop.create_task(main())
-    else:
-        print("Starting new event loop")
         asyncio.run(main())
+    except RuntimeError:  # Handles the event loop already running issue
+        loop = asyncio.get_event_loop()
+        loop.create_task(main())
