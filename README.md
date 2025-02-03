@@ -16,7 +16,9 @@ source chgk-bot-env/bin/activate
 pip install python-telegram-bot
 
 #Run your bot with:
-nohup python bot.py &
+git clone https://github.com/lab4-berlin/chgk_registration_telegram_bot.git
+cd chgk_registration_telegram_bot
+nohup python main.py &
 
 #Alternatevely: to keep it running even after disconnecting, use screen or tmux:
 screen -S mybot
