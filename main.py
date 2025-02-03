@@ -2,10 +2,13 @@ from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, Labeled
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext, ConversationHandler, CallbackQueryHandler, PreCheckoutQueryHandler
 import logging
 import sqlite3
+import getpass
 
-# Telegram Bot Token
-BOT_TOKEN = "YOUR_BOT_TOKEN"
+# Ask for bot token (masked input)
+BOT_TOKEN = getpass.getpass("Enter your Telegram Bot Token: ")
 PAYMENT_PROVIDER_TOKEN = "YOUR_STRIPE_PROVIDER_TOKEN"
+
+print("Telegram API token received. Starting bot...")
 
 # Database Setup
 conn = sqlite3.connect("registrations.db", check_same_thread=False)
