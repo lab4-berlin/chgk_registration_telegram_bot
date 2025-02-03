@@ -1,9 +1,9 @@
 import getpass
 import sqlite3
 import asyncio
-from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, LabeledPrice
+from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import (
-    Application, CommandHandler, MessageHandler, filters, CallbackContext, 
+    Application, CommandHandler, MessageHandler, filters, CallbackContext,
     ConversationHandler, CallbackQueryHandler, PreCheckoutQueryHandler
 )
 import logging
@@ -104,7 +104,8 @@ async def main():
 
 if __name__ == "__main__":
     try:
-        asyncio.run(main())
-    except RuntimeError:  # Handles the event loop already running issue
-        loop = asyncio.get_event_loop()
-        loop.create_task(main())
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(main())
+    except KeyboardInterrupt:
+        print("Bot stopped manually.")
