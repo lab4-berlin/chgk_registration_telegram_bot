@@ -1,14 +1,15 @@
-from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, LabeledPrice
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext, ConversationHandler, CallbackQueryHandler, PreCheckoutQueryHandler
-import logging
-import sqlite3
 import getpass
+import sqlite3
+from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, LabeledPrice
+from telegram.ext import (
+    Application, CommandHandler, MessageHandler, filters, CallbackContext, 
+    ConversationHandler, CallbackQueryHandler, PreCheckoutQueryHandler
+)
+import logging
 
 # Ask for bot token (masked input)
 BOT_TOKEN = getpass.getpass("Enter your Telegram Bot Token: ")
-PAYMENT_PROVIDER_TOKEN = "YOUR_STRIPE_PROVIDER_TOKEN"
-
-print("Telegram API token received. Starting bot...")
+print("Bot token received. Starting bot...")
 
 # Database Setup
 conn = sqlite3.connect("registrations.db", check_same_thread=False)
@@ -42,12 +43,12 @@ def name(update: Update, context: CallbackContext):
 
 def team(update: Update, context: CallbackContext):
     context.user_data['team'] = update.message.text
-    update.message.reply_text("Enter your ID at https://rating.chgk.info :")
+    update.message.reply_text("Enter your registration ID:")
     return REG_ID
 
 def reg_id(update: Update, context: CallbackContext):
     context.user_data['registration_id'] = update.message.text
-    update.message.reply_text("Click the button below to pay €5 in advance.",
+    update.message.reply_text("Click the button below to pay €5.",
                               reply_markup=InlineKeyboardMarkup([
                                   [InlineKeyboardButton("Pay Now", pay=True)]
                               ]))
@@ -78,26 +79,24 @@ def list_registrations(update: Update, context: CallbackContext):
     update.message.reply_text(msg)
 
 def main():
-    updater = Updater(BOT_TOKEN, use_context=True)
-    dp = updater.dispatcher
+    app = Application.builder().token(BOT_TOKEN).build()
     
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("register", register)],
         states={
-            NAME: [MessageHandler(Filters.text & ~Filters.command, name)],
-            TEAM: [MessageHandler(Filters.text & ~Filters.command, team)],
-            REG_ID: [MessageHandler(Filters.text & ~Filters.command, reg_id)],
+            NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, name)],
+            TEAM: [MessageHandler(filters.TEXT & ~filters.COMMAND, team)],
+            REG_ID: [MessageHandler(filters.TEXT & ~filters.COMMAND, reg_id)],
             PAYMENT: [PreCheckoutQueryHandler(precheckout_callback),
-                      MessageHandler(Filters.successful_payment, successful_payment)],
+                      MessageHandler(filters.SUCCESSFUL_PAYMENT, successful_payment)],
         },
         fallbacks=[]
     )
     
-    dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(conv_handler)
-    dp.add_handler(CommandHandler("list_registrations", list_registrations))
-    updater.start_polling()
-    updater.idle()
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(conv_handler)
+    app.add_handler(CommandHandler("list_registrations", list_registrations))
+    app.run_polling()
 
 if __name__ == "__main__":
     main()
